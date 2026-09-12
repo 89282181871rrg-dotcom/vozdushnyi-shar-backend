@@ -1,0 +1,16 @@
+target/
+build/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Локальная база H2
+data/
+
+# Секреты и локальные переопределения — в репозиторий не попадают
+.env
+*.local.yml
+application-local.yml
+
+.idea/
+*.iml
+.vscode/
+.DS_Store

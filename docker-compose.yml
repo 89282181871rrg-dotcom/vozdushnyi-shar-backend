@@ -1,0 +1,47 @@
+# Запуск одной командой:  docker compose up --build
+#
+# После старта:
+#   http://localhost:8080/swagger-ui.html   — API и проверка сценариев
+#   http://localhost:8080/api/config/public — действующая конфигурация
+#   http://localhost:8080/actuator/health   — состояние сервиса
+#
+# СЦЕНАРИЙ 5 НА ЗАПУЩЕННОМ КОНТЕЙНЕРЕ:
+#   папка ./config примонтирована внутрь. Откройте config/game-config.yml
+#   на хосте, поменяйте points.perLevel, сохраните — следующий раунд уже
+#   считает по-новому. Ни пересборки, ни перезапуска, ни правки кода.
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: balloon
+      POSTGRES_USER: balloon
+      POSTGRES_PASSWORD: balloon
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U balloon -d balloon"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: balloon
+      DB_USER: balloon
+      DB_PASSWORD: balloon
+    ports:
+      - "8080:8080"
+    volumes:
+      # Живая конфигурация: правки на хосте видны контейнеру сразу.
+      - ./config:/app/config
+
+volumes:
+  pgdata:
