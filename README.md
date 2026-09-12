@@ -44,6 +44,27 @@ mvn spring-boot:run
 1000 бонусных баллов. Проверить: `GET /api/users/demo`.
 Пополнить в любой момент: `POST /api/users/demo/topup?amount=1000`.
 
+### Проверка игрового ядра без фронтенда
+
+Раундовые данные и состояние хранятся в таблице `rounds`. Сервер сам
+генерирует crash-точку до старта и не возвращает её в состоянии `RUNNING`.
+Для проверки через curl:
+
+```bash
+curl -X POST http://localhost:8080/api/rounds \
+  -H "Content-Type: application/json" \
+  -d '{"username":"demo","theme":"green","betId":1}'
+
+curl http://localhost:8080/api/rounds/{id}/state
+curl -X POST http://localhost:8080/api/rounds/{id}/cashout
+curl -X POST http://localhost:8080/api/rounds/{id}/settle
+```
+
+`cashout` идемпотентен: повторный вызов возвращает тот же завершённый
+результат. Коэффициент и время из тела запроса не принимаются, а недостаток
+баланса возвращается как `409 insufficient_balance`. Для указанного в задании
+пути без префикса также доступен `/rounds`.
+
 ---
 
 ## Стек и почему он такой
